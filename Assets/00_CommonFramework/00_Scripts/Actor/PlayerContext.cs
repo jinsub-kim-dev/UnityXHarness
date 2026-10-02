@@ -1,3 +1,4 @@
+using O2un.DataStore;
 using O2un.Input;
 using UnityEngine;
 using VContainer;
@@ -10,9 +11,9 @@ namespace O2un.Actor
         private PlayerActor _actor;
 
         [Inject] 
-        public void Init(IInputReader _input)
+        public void Init(IInputReader input, IPlayerDataWriter playerData)
         {
-            _actor = new PlayerActor(_input, _view);
+            _actor = new PlayerActor(input, _view, playerData);
             _actor.Init();
         }
 

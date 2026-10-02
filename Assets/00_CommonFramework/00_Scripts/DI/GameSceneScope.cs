@@ -1,4 +1,5 @@
 using O2un.Camera;
+using O2un.DataStore;
 using O2un.Input;
 using Unity.Cinemachine;
 using UnityEngine;
@@ -17,6 +18,8 @@ namespace O2un.DI
             builder.Register<CameraManager>(Lifetime.Singleton)
                 .WithParameter("gamePlay", _gamePlay)
                 .WithParameter("cinematic", _cinematic);
+            builder.Register<UIStore>(Lifetime.Singleton).AsImplementedInterfaces();
+            builder.Register<PlayerDataStore>(Lifetime.Singleton).AsImplementedInterfaces();
         }
     }
 }
