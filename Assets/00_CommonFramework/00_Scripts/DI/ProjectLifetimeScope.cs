@@ -1,4 +1,6 @@
+using O2un.Data;
 using O2un.Input;
+using O2un.Manager;
 using VContainer;
 using VContainer.Unity;
 
@@ -9,6 +11,8 @@ namespace O2un.DI
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterEntryPoint<InputManager>();
+            builder.Register<DataProvider>(Lifetime.Singleton);
+            builder.Register<OptionManager>(Lifetime.Singleton);
         }
     }
 }
