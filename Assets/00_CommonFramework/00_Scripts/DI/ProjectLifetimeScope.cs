@@ -11,8 +11,11 @@ namespace O2un.DI
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterEntryPoint<InputManager>();
-            builder.Register<DataProvider>(Lifetime.Singleton);
-            builder.Register<OptionManager>(Lifetime.Singleton);
+            builder.Register<DataProvider>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
+            builder.Register<OptionManager>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
+            builder.Register<SceneManager>(Lifetime.Singleton).AsImplementedInterfaces().AsSelf();
+
+            builder.RegisterEntryPoint<ProjectBootStrap>();
         }
     }
 }
