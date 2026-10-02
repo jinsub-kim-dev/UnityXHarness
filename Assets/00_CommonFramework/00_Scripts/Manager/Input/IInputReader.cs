@@ -1,10 +1,11 @@
+using R3;
 using UnityEngine;
 
 namespace O2un.Input
 {
     public interface IInputReader
     {
-        Vector2 Move { get; }
-        bool IsJumpPressed { get; }
+        ReadOnlyReactiveProperty<Vector2> Move { get; }
+        Observable<Unit> IsJumpPressed { get; }
     }
 }

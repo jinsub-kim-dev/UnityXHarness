@@ -6,14 +6,18 @@ namespace O2un.Actor
 {
     public class PlayerView : MonoBehaviour
     {
-        [Inject] private IInputReader _input;
+        private Vector3 _moveDir;
+        // private float _verticalSpeed;
+        // private bool _isGrounded = true;
 
-        [SerializeField] private float _speed;
-
-        void Update()
+        public void SetVelocity(Vector3 v)
         {
-            var dir = new Vector3(_input.Move.x, 0, _input.Move.y);
-            transform.Translate(dir * _speed * Time.deltaTime);
+            _moveDir = v;
+        }
+
+        private void FixedUpdate()
+        {
+            transform.Translate(_moveDir * Time.fixedDeltaTime);
         }
     }
 }
