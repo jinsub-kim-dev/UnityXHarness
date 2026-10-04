@@ -2,6 +2,7 @@ using O2un.Camera;
 using O2un.DataStore;
 using O2un.Game;
 using O2un.Input;
+using O2un.Score;
 using Unity.Cinemachine;
 using UnityEngine;
 using VContainer;
@@ -22,6 +23,7 @@ namespace O2un.DI
             builder.Register<UIStore>(Lifetime.Singleton).AsImplementedInterfaces();
             builder.Register<PlayerDataStore>(Lifetime.Singleton).AsImplementedInterfaces();
             builder.Register<GameManager>(Lifetime.Singleton).AsImplementedInterfaces();
+            builder.Register<ScoreManager>(Lifetime.Singleton).AsImplementedInterfaces();
         }
     }
 }
