@@ -1,0 +1,1 @@
+- [No feature comments](no-feature-comments.md) — 코드에 기능별 설명 주석을 달지 않음

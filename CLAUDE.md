@@ -125,3 +125,6 @@ new Thread(() => { }).Start();
 // ❌ 순수 로직을 MonoBehaviour에 직접 작성 금지 — Module로 분리
 public class HealthLogic : MonoBehaviour { /* 순수 계산 로직 */ }
 ```
+
+## 6. Memory
+Memory 파일을 작성할 때 프로젝트 루트에 있는 Memory 폴더에도 똑같이 작성해서 git으로 파일을 관리할 수 있어야 한다.
