@@ -130,9 +130,30 @@ public class HealthLogic : MonoBehaviour { /* 순수 계산 로직 */ }
 Memory 파일을 작성할 때 프로젝트 루트에 있는 Memory 폴더에도 똑같이 작성해서 git으로 파일을 관리할 수 있어야 한다.
 
 ## 코드 작성 라우팅
-기능 추가·코드 작성 요청은 직접 처리하지 말고
+
+### 시스템 단위 → unity-dev-orchestrator
+`docs/design/game-plan.md`의 시스템 단위 구현 요청("적 스폰 시스템 만들어줘", "다음 시스템 진행해")과
+그 후속 요청("피드백 반영해줘", "다시", "이 버그만", "수치 조정")은 `unity-dev-orchestrator` Skill을 먼저 사용한다.
+설계 승인 → 구현 → 리뷰 → 씬 구성 승인 → 4단계 검증 → 기록 흐름을 Orchestrator가 관리한다.
+
+### 단일 클래스 소규모 수정 → add-feature
+그 외 기능 추가·코드 작성 요청은 직접 처리하지 말고
 반드시 add-feature 서브에이전트로 위임한다.
 
 위임할 때 사용자 요청 원문을 그대로 전달한다.
 "코드베이스를 검색·분석하라" 같은 지시나 분석 절차·판단 기준을 덧붙이지 않는다.
 서브에이전트가 자체 정의(codebase-index.md 확인 → 유형 판단 → Skill 실행)대로 처리하도록 둔다.
+
+## 하네스 (3D 탑다운 뱀서 MVP)
+- 프로젝트 전용 코드: `Assets/10_ProjectA/00_Script/{대분류}/{중분류}/`, 네임스페이스 `O2un.ProjectA.{대분류}`
+  (프리팹 `01_Prefabs`, SO `02_ScriptableObjects` — 폴더 인덱스는 `docs/conventions/convention.md`)
+- 세부 C# 규칙: `docs/conventions/convention.md` → `csharp-convention-guide` Skill
+- Agent: `.claude/agents/` (unity-architect, gameplay-engineer, code-reviewer, unity-ai-operator, add-feature)
+- Skill: `.claude/skills/` (Orchestrator: `unity-dev-orchestrator`)
+- 검증: Gate 1~3은 unity-ai-operator가 Unity 공식 MCP(`unity-mcp`)로 세션 안에서 수행, Gate 4는 Stop hook 뷰어(`.claude/hooks/open-viewer.ps1`, Node.js 필요)에서 제출
+- 설계·검증·기록: `artifacts/` (C# 코드 금지), 지도는 `artifacts/README.md`
+- 사람 승인: 설계안, 씬·프리팹·에셋 변경, `00_CommonFramework` 수정, 패키지·asmdef 추가
+
+## 변경 이력
+- 2026-10-05 unity-dev-harness로 오케스트레이션 하네스 구성 (Agent 4, Skill 5 신규, 기존 Skill 경로를 10_ProjectA로 갱신)
+- 2026-10-05 `code-review` Skill → `convention-review`로 이름 변경 (내장 `/code-review` 명령과 충돌 방지)

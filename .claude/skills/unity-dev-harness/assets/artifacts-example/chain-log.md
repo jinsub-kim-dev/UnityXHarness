@@ -4,7 +4,7 @@
 
 ---
 
-## 2026-10-05 · 하네스 구성 (3D 탑다운 뱀서 MVP)
-- 4단계: - (코드 작업 없음)
-- 개선점: CoplayDev 전용 검증 hook 대신 Unity 공식 MCP로 세션 내 Gate 1~3 수행하도록 구성. 샘플 artifacts 초기화.
-- 다음 입력: Development Order 1 — 플레이어 이동
+## 2026-05-28 · 2D 플랫포머 PlayerController 신규
+- 4단계: ①②✅ ③❌→✅ ④수정필요
+- 개선점: 구현이 설계의 grounded 조건을 누락해 공중 무한 점프 발생 → FixedUpdate에 grounded 조건 추가. reviewer에 설계↔구현 항목 매칭 체크 도입 예정.
+- 다음 입력: 점프 입력 버퍼 도입

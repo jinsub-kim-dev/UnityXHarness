@@ -1,0 +1,28 @@
+{
+    "hooks": {
+        "UserPromptSubmit": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "powershell -ExecutionPolicy Bypass -File .claude/hooks/clear-artifacts.ps1"
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "powershell -ExecutionPolicy Bypass -File .claude/hooks/unity-validate.ps1"
+                    },
+                    {
+                        "type": "command",
+                        "command": "powershell -ExecutionPolicy Bypass -File .claude/hooks/open-viewer.ps1"
+                    }
+                ]
+            }
+        ]
+    }
+}

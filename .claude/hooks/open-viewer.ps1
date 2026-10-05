@@ -427,6 +427,23 @@ try {
 
   Initialize-MainLog $stateDir
 
+  # 대화(세션)당 1회만 실행: 매 턴마다 브라우저 탭을 새로 여는 것을 막는다.
+  # 같은 CLAUDE_SESSION_ID면 스킵. 강제로 다시 열려면 FORCE_REOPEN_VIEWER=1
+  $sessionFlagFile = Join-Path $stateDir "viewer-session.txt"
+  if ($env:CLAUDE_SESSION_ID -and ($env:FORCE_REOPEN_VIEWER -ne "1")) {
+    $prevSession = $null
+    if (Test-Path $sessionFlagFile) {
+      try { $prevSession = (Get-Content $sessionFlagFile -ErrorAction Stop | Select-Object -First 1).Trim() } catch { }
+    }
+    if ($prevSession -eq $env:CLAUDE_SESSION_ID) {
+      Write-ViewerLog ("Already opened once for this conversation (session=" + $env:CLAUDE_SESSION_ID + "). Skipping. Set FORCE_REOPEN_VIEWER=1 to force.")
+      exit 0
+    }
+    try {
+      $env:CLAUDE_SESSION_ID | Out-File -FilePath $sessionFlagFile -Encoding ascii -Force
+    } catch { }
+  }
+
   # .cs 변경 감지: last-clear-ts 이후 변경된 파일이 없으면 뷰어 스킵
   $tsFile = Join-Path $stateDir 'last-clear-ts.txt'
   if (Test-Path $tsFile) {

@@ -1,0 +1,28 @@
+{
+    "hooks": {
+        "UserPromptSubmit": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "sh .claude/hooks/clear-artifacts.sh"
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "sh .claude/hooks/unity-validate.sh"
+                    },
+                    {
+                        "type": "command",
+                        "command": "sh .claude/hooks/open-viewer.sh"
+                    }
+                ]
+            }
+        ]
+    }
+}

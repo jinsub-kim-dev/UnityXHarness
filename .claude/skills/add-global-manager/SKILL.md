@@ -14,8 +14,10 @@ allowed-tools:
 
 ## 파일 위치
 
-- `{프로젝트루트}/{대분류}/$ARGUMENTS/$ARGUMENTSManager.cs`
+- 프로젝트 전용: `Assets/10_ProjectA/00_Script/{대분류}/$ARGUMENTS/$ARGUMENTSManager.cs` (네임스페이스 `O2un.ProjectA.{대분류}`)
+- 공통 인프라: `Assets/00_CommonFramework/00_Scripts/Manager/$ARGUMENTS/` — 사람 승인 필요
 - 같은 기능의 Module·Interface는 같은 폴더에 함께 둔다
+- 세부 규칙(클래스 작성 순서, if 평가값 앞 배치 등)은 `csharp-convention-guide` Skill을 따른다
 
 ## 클래스 규칙
 
@@ -28,6 +30,7 @@ allowed-tools:
 ## DI 등록
 
 - LifetimeScope에 `builder.Register<$ARGUMENTSManager>(Lifetime.Singleton).AsImplementedInterfaces()` 으로 등록
+- 앱 수명 SystemManager는 `ProjectLifetimeScope`, 씬 한정 Manager는 해당 씬 스코프(`GameSceneScope` 등). 어느 스코프인지는 `artifacts/01-design.md`의 DI 등록 표를 따른다
 
 ## 생성 후 검증
 

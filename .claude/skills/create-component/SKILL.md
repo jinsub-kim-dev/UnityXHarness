@@ -23,9 +23,16 @@ argument-hint: "[만들 컴포넌트명과 역할]"
 - **개별 오브젝트(캐릭터·적 등) 소속 Manager / Service / 그 외** → CLAUDE.md 컨벤션에 따라 직접 생성
 - 어느 종류·위치에 둘지 애매하면 코드 작성 전에 사람에게 먼저 확인한다
 
-## 3. 생성 후 검증
+## 3. 위치와 규칙
+
+- 프로젝트 전용 코드: `Assets/10_ProjectA/00_Script/{대분류}/{중분류}/`, 네임스페이스 `O2un.ProjectA.{대분류}`
+- 공통 인프라: `Assets/00_CommonFramework/00_Scripts/...` — 새로 추가·수정은 사람 승인 필요
+- `artifacts/01-design.md`가 있으면 그 클래스 구조·위치를 그대로 따른다
+- 작성 규칙은 `csharp-convention-guide` Skill을 따른다
+
+## 4. 생성 후 검증
 
 - 폴더가 기능 단위(대분류/중분류)로 올바르게 배치됐는지 확인
-- 공통 인프라면 `00_CommonFramework`에 있는지 확인
+- 공통 인프라면 `00_CommonFramework`에, 뱀서 전용이면 `10_ProjectA`에 있는지 확인
 - 의존 방향(Manager → Module, Manager →(interface)→ Service)을 지키는지 확인
 - CLAUDE.md 금지 패턴 위반 없는지 확인

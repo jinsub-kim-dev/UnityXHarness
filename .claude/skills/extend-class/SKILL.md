@@ -26,6 +26,8 @@ argument-hint: "[확장할 클래스명과 추가할 기능]"
 - **로직 단위가 커지거나 재사용·분리가 필요** → 새 Module을 만들어 위임. `add-module` Skill로 라우팅한 뒤 대상 Manager가 소유·위임하도록 연결
 - **새로운 전역 Manager가 필요** → `add-global-manager` Skill로 라우팅
 - 어디에 넣을지 애매하면 코드 작성 전에 사람에게 먼저 확인한다
+- 대상이 `00_CommonFramework`의 클래스면 수정 전에 사람 승인을 받는다 (공통 코드)
+- 새로 생기는 파일은 `Assets/10_ProjectA/00_Script/...`, 작성 규칙은 `csharp-convention-guide` Skill을 따른다
 
 ## 확장 후 검증
 

@@ -180,3 +180,13 @@ GameSceneScope (GameScene)
 - `ProjectBootStrap.cs`에 사용하지 않는 `using`(`System.Collections`, `System.Threading.Tasks`)이 있음. `Select`를 쓰지만 `using System.Linq`가 없음 (컴파일 여부 확인 필요)
 - `CameraManager`가 DI에 등록돼 있지만 아직 사용하는 곳 없음
 - `UIStore`는 `UI/` 폴더에 있지만 네임스페이스는 `O2un.DataStore`, `PlayerDataStore`는 `Actor/` 폴더에 있음
+
+---
+
+## 9. ProjectA (`Assets/10_ProjectA/00_Script/`) — 네임스페이스 `O2un.ProjectA.{대분류}`
+
+3D 탑다운 뱀서 MVP 전용 코드. `unity-dev-orchestrator`로 시스템 단위 구현 시 gameplay-engineer가 갱신한다.
+
+| 시스템 (game-plan) | 클래스 | 종류 | 역할 |
+|---|---|---|---|
+| (아직 없음) | | | |

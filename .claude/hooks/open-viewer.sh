@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
-# Re-exec under real bash when invoked via sh / POSIX mode (process substitution is unavailable there).
-if [ -z "${BASH_VERSION:-}" ] || ( shopt -qo posix 2>/dev/null ); then
-  exec bash "$0" "$@"
-fi
-
 # Unity Dev Harness - Express viewer launcher for macOS/Linux
 # Location:
 #   <project>/.claude/hooks/open-viewer.sh
@@ -320,6 +315,19 @@ main() {
   fi
 
   init_main_log "$state_dir"
+
+  # 대화(세션)당 1회만 실행: 매 턴마다 브라우저 탭을 새로 여는 것을 막는다.
+  # 같은 CLAUDE_SESSION_ID면 스킵. 강제로 다시 열려면 FORCE_REOPEN_VIEWER=1
+  local session_flag_file="$state_dir/viewer-session.txt"
+  if [ -n "${CLAUDE_SESSION_ID:-}" ] && [ "${FORCE_REOPEN_VIEWER:-0}" != "1" ]; then
+    local prev_session=""
+    [ -f "$session_flag_file" ] && prev_session="$(head -n 1 "$session_flag_file" 2>/dev/null | tr -d '[:space:]')"
+    if [ "$prev_session" = "$CLAUDE_SESSION_ID" ]; then
+      write_log "Already opened once for this conversation (session=$CLAUDE_SESSION_ID). Skipping. Set FORCE_REOPEN_VIEWER=1 to force."
+      return 0
+    fi
+    printf '%s\n' "$CLAUDE_SESSION_ID" > "$session_flag_file" 2>/dev/null || true
+  fi
 
   # .cs 변경 감지: last-clear-ts 이후 변경된 파일이 없으면 뷰어 스킵
   local ts_file="$state_dir/last-clear-ts.txt"

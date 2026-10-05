@@ -1,25 +1,22 @@
 # 개선 기록
 
-## 2026-05-28 PlayerController 1차 작업
+## 2026-10-05 하네스 구성
 
 ### 무엇이 아쉬웠나
-1. 3단계 자동 검증에서 공중 무한 점프가 발견됨 (1차 시도 실패).
-2. 4단계 사용자 검증에서 착지 직후 점프 입력이 가끔 누락됨 (판정: 수정 필요).
+- (코드 작업 전) 스킬의 검증 hook 자산이 CoplayDev MCP for Unity(HTTP) 전용이라 이 프로젝트의 Unity 공식 relay MCP(stdio)와 맞지 않았다.
+- 폴더 규칙이 CLAUDE.md / convention.md / 실제 코드 세 곳에서 달랐다.
 
 ### 원인
-1. PlayerController가 GroundChecker.IsGrounded를 참조하지 않고 점프 요청만으로 velocity를 적용함. 설계 문서에는 명시돼 있었으나 구현에서 누락.
-2. 점프 입력 감지가 `Update`에서 `Input.GetKeyDown` 1프레임이고, 직후 `FixedUpdate`에서 grounded가 아직 false인 순간이 있을 수 있음 (착지 판정과 입력 타이밍 차).
+- 공식 relay MCP는 Claude 세션 안에서만 호출 가능해 Stop hook 스크립트가 붙을 수 없다.
+- `00_CommonFramework`는 공통 코드, 프로젝트 전용 코드는 별도 규칙이 필요했다.
 
 ### 반영
-1. (즉시) `PlayerController.FixedUpdate`에서 `groundChecker.IsGrounded` 조건 추가 완료.
-2. (다음 작업) 점프 입력 버퍼 도입 검토. 입력 후 일정 시간(예: 0.1s) 안에 grounded가 되면 점프 처리.
-   - 대상 파일: `Assets/Scripts/Player/PlayerController.cs`
-   - 관련 Skill: 새로 추가 검토 — `input-buffer-pattern` (점프·대시 등 공통 입력 버퍼 패턴)
+- Gate 1~3은 `unity-ai-operator`가 `unity-validation-gates` Skill로 세션 내 수행. Stop hook은 컨벤션 체크 → 뷰어 오픈만.
+- 프로젝트 전용 코드: `Assets/10_ProjectA/00_Script/{대분류}/{중분류}/`, 네임스페이스 `O2un.ProjectA.{대분류}`.
 
 ### 다음 테스트
-- 입력 버퍼 도입 후 4단계 사용자 검증에서 누락이 사라지는지 확인.
-- 회귀: 공중 무한 점프가 다시 생기지 않는지 3단계 자동 검증으로 확인.
+- 첫 시스템(플레이어 이동)에서 Gate 1~3이 공식 MCP로 실제 판정되는지, `02-validation.md` 게이트 표가 뷰어에 표시되는지 확인.
+- EditMode 테스트가 asmdef 없이(Assembly-CSharp-Editor) 실행되는지 첫 실행에서 확인. 안 되면 asmdef 도입 여부를 사람에게 묻는다.
 
 ### 하네스 자체 개선 메모
-- 설계 문서(01-design.md)에 "grounded 조건 필수" 항목이 명시돼 있었으나 구현에서 빠졌다. code-reviewer가 게이트 통과 전에 설계 ↔ 구현 항목 매칭 체크를 한 번 더 도입하면 좋을 것.
-  - 반영 대상: `.claude/agents/code-reviewer.md` 작업 방식에 "설계 항목 체크리스트 매칭" 추가.
+- 이전 샘플 기록의 교훈(설계 항목이 구현에서 누락)을 반영해 01-design에 체크리스트 ID(D-xx)를 두고 code-reviewer가 1:1 매칭한다.

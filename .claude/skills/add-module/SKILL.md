@@ -12,8 +12,10 @@ argument-hint: "[ModuleName]"
 
 ## 파일 위치
 
-- `{프로젝트루트}/{대분류}/{중분류}/$ARGUMENTSModule.cs`
+- 프로젝트 전용: `Assets/10_ProjectA/00_Script/{대분류}/{중분류}/$ARGUMENTSModule.cs` (네임스페이스 `O2un.ProjectA.{대분류}`)
+- 공통 인프라: `Assets/00_CommonFramework/00_Scripts/{대분류}/{중분류}/` — 사람 승인 필요
 - 이 Module을 소유하는 Manager와 같은 폴더에 둔다
+- 세부 규칙은 `csharp-convention-guide` Skill을 따른다
 
 ## 클래스 규칙
 
