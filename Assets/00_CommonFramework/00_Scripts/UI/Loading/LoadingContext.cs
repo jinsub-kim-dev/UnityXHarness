@@ -21,7 +21,7 @@ namespace O2un.UI
             _view.Bind(_vm);
         }
 
-        void Oestroy()
+        void OnDestroy()
         {
             _vm?.Dispose();            
         }
