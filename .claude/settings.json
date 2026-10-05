@@ -21,6 +21,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": ".claude/evals/check-convention.md 체크리스트를 읽고, 이번 세션에서 변경된 .cs 파일을 git으로 찾아 각 항목을 판정해줘. 모두 통과하면 {\"ok\": true}, 하나라도 실패하면 {\"ok\": false, \"reason\": \"어느 파일의 어떤 항목이 실패했는지\"} 형식으로 답해. $ARGUMENTS",
+            "timeout": 120
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {
