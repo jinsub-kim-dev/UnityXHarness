@@ -1,0 +1,26 @@
+{
+    "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -File .claude/hooks/post_check.ps1"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -File .claude/hooks/guard_check.ps1"
+          }
+        ]
+      }
+    ]
+  }
+}
