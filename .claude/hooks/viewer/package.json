@@ -1,0 +1,15 @@
+{
+  "name": "unity-dev-harness-viewer",
+  "version": "1.2.0",
+  "private": true,
+  "description": "Local Express viewer for Unity Dev Harness artifacts.",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "chokidar": "^3.6.0",
+    "express": "^4.19.2"
+  }
+}

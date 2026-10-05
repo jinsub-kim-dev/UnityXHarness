@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unity Dev Harness — 검증 결과 뷰어</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #161a22;
+    --panel-2: #1c2230;
+    --text: #e6e9ef;
+    --muted: #8a92a6;
+    --border: #2a3142;
+    --accent: #6ea8fe;
+    --pass: #4ade80;
+    --fail: #f87171;
+    --warn: #fbbf24;
+    --pending: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  header {
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    position: sticky; top: 0; z-index: 10;
+  }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  header .meta { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  header .header-actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+  header .header-actions button { font-size: 13px; padding: 7px 12px; }
+  main { max-width: 980px; margin: 0 auto; padding: 24px 32px 80px; }
+  section { margin-bottom: 32px; }
+  h2 { font-size: 16px; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .gates { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .gate { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .gate .label { font-size: 12px; color: var(--muted); }
+  .gate .name { font-weight: 600; margin: 4px 0 8px; }
+  .gate .status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--panel-2); }
+  .status.pass { color: var(--pass); }
+  .status.fail { color: var(--fail); }
+  .status.warn { color: var(--warn); }
+  .status.pending { color: var(--pending); }
+  .status::before { content: "●"; }
+  .artifact { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+  .artifact summary { cursor: pointer; padding: 12px 16px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+  .artifact summary::-webkit-details-marker { display: none; }
+  .artifact summary::after { content: "▾"; color: var(--muted); }
+  .artifact[open] summary::after { content: "▴"; }
+  .artifact .body { padding: 0 20px 16px; border-top: 1px solid var(--border); color: #d6dae5; font-size: 14px; white-space: pre-wrap; word-wrap: break-word; }
+  .artifact .body pre { background: #0a0c11; padding: 12px 14px; border-radius: 6px; overflow-x: auto; font-size: 12.5px; }
+  .artifact .body code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .artifact .body table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+  .artifact .body th, .artifact .body td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
+  .artifact .body th { background: var(--panel-2); }
+  .artifact .body h1, .artifact .body h2, .artifact .body h3 { margin-top: 14px; }
+  .artifact .body h1 { font-size: 17px; }
+  .artifact .body h2 { font-size: 15px; border: none; padding: 0; }
+  .artifact .body h3 { font-size: 14px; color: var(--muted); }
+  .feedback { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+  .feedback.locked { opacity: 0.55; pointer-events: none; }
+  .feedback .lock-note { background: var(--panel-2); padding: 10px 14px; border-radius: 6px; font-size: 13px; color: var(--warn); margin-bottom: 14px; }
+  .feedback label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 6px; }
+  .feedback input[type="text"], .feedback textarea { width: 100%; background: #0a0c11; border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 10px 12px; font: inherit; font-size: 14px; }
+  .feedback textarea { min-height: 70px; resize: vertical; }
+  .feedback .judgment { display: flex; gap: 16px; margin-top: 6px; }
+  .feedback .judgment label { display: flex; align-items: center; gap: 6px; margin: 0; cursor: pointer; color: var(--text); }
+  .actions { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+  button { background: var(--accent); color: #0a0c11; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
+  button.secondary { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--panel-2); border: 1px solid var(--border); padding: 12px 20px; border-radius: 8px; font-size: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.4); display: none; max-width: 90vw; }
+  .toast.show { display: block; }
+  .toast.success { border-color: var(--pass); color: var(--pass); }
+  .toast.warn { border-color: var(--warn); color: var(--warn); }
+  .toast.fail { border-color: var(--fail); color: var(--fail); }
+  .empty { color: var(--muted); font-size: 13px; padding: 14px; text-align: center; }
+  @media (max-width: 760px) { .gates { grid-template-columns: repeat(2, 1fr); } main { padding: 20px 16px 60px; } header { padding: 16px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Unity Dev Harness — 검증 결과 뷰어</h1>
+  <div class="meta" id="meta">Express 서버에서 상위 프로젝트의 artifacts 폴더를 읽는 중…</div>
+  <div class="header-actions">
+    <button id="btn-reload" class="secondary">↻ 다시 읽기</button>
+    <button id="btn-open-health" class="secondary">서버 상태 확인</button>
+  </div>
+</header>
+
+<main>
+  <section>
+    <h2>4단계 검증 게이트</h2>
+    <div class="gates">
+      <div class="gate"><div class="label">1단계</div><div class="name">컴파일</div><div class="status pending" id="gate-1">대기</div></div>
+      <div class="gate"><div class="label">2단계</div><div class="name">런타임 에러</div><div class="status pending" id="gate-2">대기</div></div>
+      <div class="gate"><div class="label">3단계</div><div class="name">기능 점검 (자동)</div><div class="status pending" id="gate-3">대기</div></div>
+      <div class="gate"><div class="label">4단계</div><div class="name">기능 점검 (사용자)</div><div class="status pending" id="gate-4">대기</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>산출물</h2>
+    <div id="artifacts"></div>
+  </section>
+
+  <section>
+    <h2>4단계 사용자 피드백</h2>
+    <div class="feedback" id="feedback">
+      <div class="lock-note" id="lockNote" style="display:none">1~3단계가 모두 통과해야 입력이 활성화됩니다.</div>
+      <label>확인한 항목 (어떤 동작·기능을 점검했는지)</label>
+      <textarea id="f-checked" placeholder="예) A/D 키 좌우 이동, 스페이스 점프, 지면 체크"></textarea>
+      <label>정상 동작</label>
+      <textarea id="f-ok" placeholder="예) 이동·점프 모두 의도대로 동작"></textarea>
+      <label>문제 / 이상 동작</label>
+      <textarea id="f-issue" placeholder="예) 착지 직후 점프 입력이 가끔 누락됨"></textarea>
+      <label>재현 방법</label>
+      <textarea id="f-repro" placeholder="예) 착지하자마자 즉시 스페이스. 5회 중 1~2회 누락"></textarea>
+      <label>판정</label>
+      <div class="judgment">
+        <label><input type="radio" name="judgment" value="통과"> 통과</label>
+        <label><input type="radio" name="judgment" value="수정 필요" checked> 수정 필요</label>
+      </div>
+      <div class="actions">
+        <button id="btn-submit">제출 (서버 저장)</button>
+        <button id="btn-download" class="secondary">파일 다운로드</button>
+        <button id="btn-copy" class="secondary">클립보드 복사</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ARTIFACT_FILES = [
+  { key: '00-input', title: '00. 입력 정리' },
+  { key: '01-design', title: '01. 설계' },
+  { key: '02-validation', title: '02. 검증 (4단계 게이트)' },
+  { key: '03-review', title: '03. 리뷰' },
+  { key: '04-user-feedback', title: '04. 사용자 검증 피드백' },
+  { key: 'improvement-log', title: '개선 기록' }
+];
+
+let latestArtifacts = {};
+let reloadTimer = null;
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renderMarkdown(md) {
+  md = escapeHtml(md);
+  md = md.replace(/```([a-zA-Z0-9]*)\n([\s\S]*?)```/g, (_, lang, code) => `<pre><code>${code}</code></pre>`);
+  md = md.replace(/^### (.*)$/gm, '<h3>$1</h3>');
+  md = md.replace(/^## (.*)$/gm, '<h2>$1</h2>');
+  md = md.replace(/^# (.*)$/gm, '<h1>$1</h1>');
+  md = md.replace(/(^\|.+\|\n\|[\s\-|:]+\|\n(?:^\|.+\|\n?)+)/gm, block => {
+    const lines = block.trim().split('\n');
+    const header = lines[0].split('|').slice(1, -1).map(s => s.trim());
+    const rows = lines.slice(2).map(r => r.split('|').slice(1, -1).map(s => s.trim()));
+    return `<table><thead><tr>${header.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  });
+  md = md.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  md = md.replace(/`([^`]+)`/g, '<code>$1</code>');
+  md = md.replace(/(^- .+(?:\n  .+|\n- .+)*)+/gm, block => {
+    const items = block.split(/\n(?=- )/).map(it => {
+      const content = it.replace(/^- /, '').replace(/\n  /g, '<br>');
+      return `<li>${content}</li>`;
+    });
+    return `<ul>${items.join('')}</ul>`;
+  });
+  md = md.split(/\n{2,}/).map(p => {
+    if (/^<(h\d|table|ul|pre|ol)/.test(p.trim())) {
+      return p;
+    }
+    return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+  }).join('\n');
+  return md;
+}
+
+async function loadArtifacts(showMessage = false) {
+  try {
+    const response = await fetch('/api/artifacts', { cache: 'no-store' });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    latestArtifacts = Object.fromEntries(data.files.map(file => [file.key, file]));
+    renderArtifacts(data.files);
+    renderGates(latestArtifacts['02-validation']?.content || null);
+    renderFeedbackLockState(latestArtifacts['02-validation']?.content || null);
+
+    const found = data.files.filter(file => file.exists).length;
+    document.getElementById('meta').textContent = `project: ${data.projectDir || '-'}   |   artifacts: ${data.artifactDir}   |   불러온 파일: ${found} / ${ARTIFACT_FILES.length}   |   Express 서버 저장 가능`;
+
+    if (showMessage) {
+      showToast('↻ 다시 읽음', 'success', 1800);
+    }
+  }
+  catch (error) {
+    console.error(error);
+    document.getElementById('meta').textContent = 'Express 서버 연결 실패 — npm start 상태를 확인하세요.';
+    document.getElementById('artifacts').innerHTML = '<div class="empty" style="padding:28px">서버에서 산출물을 읽지 못했습니다.</div>';
+    showToast('서버 연결 실패', 'fail', 4000);
+  }
+}
+
+function scheduleReload() {
+  clearTimeout(reloadTimer);
+  reloadTimer = setTimeout(() => loadArtifacts(false), 250);
+}
+
+function connectEvents() {
+  if (!window.EventSource) {
+    return;
+  }
+
+  const events = new EventSource('/api/events');
+  events.onmessage = event => {
+    try {
+      const payload = JSON.parse(event.data);
+
+      if (payload.type !== 'connected') {
+        scheduleReload();
+      }
+    }
+    catch {
+      scheduleReload();
+    }
+  };
+  events.onerror = () => {
+    events.close();
+  };
+}
+
+function renderArtifacts(files) {
+  const container = document.getElementById('artifacts');
+  container.innerHTML = '';
+
+  for (const file of files) {
+    const content = file.content;
+    const html = content === null ? `<div class="empty">${file.fileName} 없음</div>` : renderMarkdown(content);
+    const open = file.key === '02-validation' ? ' open' : '';
+    container.insertAdjacentHTML('beforeend', `<details class="artifact"${open}><summary>${file.title}${content === null ? ' (없음)' : ''}</summary><div class="body">${html}</div></details>`);
+  }
+}
+
+function renderGates(validationMd) {
+  const setStatus = (id, text, cls) => {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = `status ${cls}`;
+  };
+
+  if (!validationMd) {
+    [1, 2, 3, 4].forEach(i => setStatus(`gate-${i}`, '대기', 'pending'));
+    return;
+  }
+
+  const lines = validationMd.split('\n');
+  const startIdx = lines.findIndex(l => /게이트 진행 요약/.test(l));
+
+  if (startIdx < 0) {
+    return;
+  }
+
+  const tableLines = [];
+
+  for (let i = startIdx; i < lines.length; i++) {
+    if (lines[i].startsWith('|')) {
+      tableLines.push(lines[i]);
+    }
+    else if (tableLines.length > 0) {
+      break;
+    }
+  }
+
+  const rows = tableLines.slice(2, 6);
+  rows.forEach((row, idx) => {
+    const cells = row.split('|').map(s => s.trim()).filter(Boolean);
+    const resultCell = cells[1] || '';
+    let cls = 'pending';
+    let text = '대기';
+
+    if (/✅/.test(resultCell) && /❌/.test(resultCell)) {
+      cls = 'warn';
+      text = '재통과';
+    }
+    else if (/✅/.test(resultCell)) {
+      cls = 'pass';
+      text = '통과';
+    }
+    else if (/❌/.test(resultCell)) {
+      cls = 'fail';
+      text = '실패';
+    }
+    else if (/⏳/.test(resultCell)) {
+      cls = 'pending';
+      text = '대기';
+    }
+
+    setStatus(`gate-${idx + 1}`, text, cls);
+  });
+}
+
+function renderFeedbackLockState(validationMd) {
+  const fb = document.getElementById('feedback');
+  const lockNote = document.getElementById('lockNote');
+
+  if (!validationMd) {
+    fb.classList.add('locked');
+    lockNote.style.display = 'block';
+    return;
+  }
+
+  const pass = id => {
+    const text = document.getElementById(id).textContent;
+    return text === '통과' || text === '재통과';
+  };
+  const ready = pass('gate-1') && pass('gate-2') && pass('gate-3');
+  fb.classList.toggle('locked', !ready);
+  lockNote.style.display = ready ? 'none' : 'block';
+}
+
+function buildFeedbackMd() {
+  const v = id => (document.getElementById(id).value || '').trim();
+  const judgment = document.querySelector('input[name="judgment"]:checked')?.value || '수정 필요';
+  const now = new Date();
+  const ts = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const fmt = txt => {
+    if (!txt) {
+      return '  - (없음)';
+    }
+
+    return txt.split('\n').map(l => l.trim()).filter(Boolean).map(l => `  - ${l}`).join('\n');
+  };
+
+  return `# 04. 사용자 검증 피드백
+
+작성: 사용자 (Express 뷰어에서 submit)
+일시: ${ts}
+저장 경로: \`artifacts/04-user-feedback.md\`
+
+## 사용자 검증 피드백
+- 확인한 항목:
+${fmt(v('f-checked'))}
+- 정상 동작:
+${fmt(v('f-ok'))}
+- 문제/이상 동작:
+${fmt(v('f-issue'))}
+- 재현 방법:
+${fmt(v('f-repro'))}
+- 판정: **${judgment}**
+`;
+}
+
+function showToast(msg, kind = 'success', ms = 3500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${kind}`;
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => { t.className = 'toast'; }, ms);
+}
+
+async function saveViaServer(md) {
+  const response = await fetch('/api/artifacts/04-user-feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content: md })
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.error || `HTTP ${response.status}`);
+  }
+}
+
+function saveViaDownload(md) {
+  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '04-user-feedback.md';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('⬇ 04-user-feedback.md 다운로드됨', 'warn', 5000);
+}
+
+async function saveViaClipboard(md) {
+  try {
+    await navigator.clipboard.writeText(md);
+    showToast('📋 클립보드에 복사됨', 'warn', 4000);
+    return true;
+  }
+  catch {
+    return false;
+  }
+}
+
+document.getElementById('btn-submit').addEventListener('click', async () => {
+  const md = buildFeedbackMd();
+
+  try {
+    await saveViaServer(md);
+    showToast('✅ artifacts/04-user-feedback.md 로 저장됨', 'success');
+    await loadArtifacts(false);
+  }
+  catch (error) {
+    console.error(error);
+    showToast('서버 저장 실패. 다운로드로 저장합니다.', 'fail', 5000);
+    saveViaDownload(md);
+  }
+});
+
+document.getElementById('btn-download').addEventListener('click', () => {
+  saveViaDownload(buildFeedbackMd());
+});
+
+document.getElementById('btn-copy').addEventListener('click', async () => {
+  if (!(await saveViaClipboard(buildFeedbackMd()))) {
+    showToast('클립보드 접근이 막혔습니다. 다운로드를 사용하세요.', 'fail');
+  }
+});
+
+document.getElementById('btn-reload').addEventListener('click', () => {
+  loadArtifacts(true);
+});
+
+document.getElementById('btn-open-health').addEventListener('click', async () => {
+  try {
+    const response = await fetch('/api/health', { cache: 'no-store' });
+    const data = await response.json();
+    showToast(`서버 정상: ${data.artifactDir}`, 'success', 5000);
+  }
+  catch {
+    showToast('서버 상태 확인 실패', 'fail');
+  }
+});
+
+loadArtifacts(false);
+connectEvents();
+</script>
+</body>
+</html>
