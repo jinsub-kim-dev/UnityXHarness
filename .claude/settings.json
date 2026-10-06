@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "agent",
-            "prompt": ".claude/evals/check-convention.md 체크리스트를 읽고, 이번 세션에서 변경된 .cs 파일을 git으로 찾아 각 항목을 판정해줘. 모두 통과하면 {\"ok\": true}, 하나라도 실패하면 {\"ok\": false, \"reason\": \"어느 파일의 어떤 항목이 실패했는지\"} 형식으로 답해. $ARGUMENTS",
+            "prompt": "아래 입력 JSON의 session_id를 확인하고, git은 사용하지 마. 1) .claude/hooks/state/changed-cs-{session_id}.txt 를 Read로 읽어. 파일이 없거나 비어 있으면 이번 세션에 변경된 .cs 파일이 없는 것이므로 다른 작업 없이 즉시 {\"ok\": true}로 답해. 2) 파일에 경로가 있으면 .claude/evals/check-convention.md 체크리스트를 읽고, 목록의 각 .cs 파일 중 현재 존재하고 체크리스트의 검증 대상 범위에 드는 파일만 각 항목을 판정해. 모두 통과하면 {\"ok\": true}, 하나라도 실패하면 {\"ok\": false, \"reason\": \"어느 파일의 어떤 항목이 실패했는지\"} 형식으로 답해. $ARGUMENTS",
             "timeout": 120
           },
           {

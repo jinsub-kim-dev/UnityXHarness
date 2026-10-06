@@ -12,6 +12,16 @@ $filePath = $data.tool_input.file_path
 if ($toolName -notin @("Write", "Edit")) { exit 0 }
 if ($filePath -notmatch "\.cs$") { exit 0 }
 
+$sessionId = $data.session_id
+if ($sessionId) {
+    $stateDir = Join-Path $PSScriptRoot "state"
+    New-Item -ItemType Directory -Force $stateDir | Out-Null
+    $listPath = Join-Path $stateDir "changed-cs-$sessionId.txt"
+    $existing = @()
+    if (Test-Path $listPath) { $existing = Get-Content $listPath -Encoding UTF8 }
+    if ($existing -notcontains $filePath) { Add-Content -Path $listPath -Value $filePath -Encoding UTF8 }
+}
+
 $content = Get-Content $filePath -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
 if ($null -eq $content) { exit 0 }
 
